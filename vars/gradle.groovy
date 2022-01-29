@@ -1,11 +1,27 @@
-def call(){
+def call(stages){
+    def stagesList = stages.split(';')
+    sh "echo ${stagesList}"
     //Escribir directamente el código del stage, sin agregarle otra clausula de Jenkins.
-    stage("Paso 1: Build && Test"){
-        sh "echo 'Build && Test!'"
+    sBuild()
+    sSonar()
+    sCurlSpring()
+    sUNexus()
+    sDNexus()
+    sTestJar()
+    sCurlJar()
+}
+
+def sBuild(){
+    env.STAGE = "Paso 1: Build  Test"
+    stage("$env.STAGE "){
+        sh "echo 'Build  Test!'"
         sh "gradle clean build"
         // code
     }
-    stage("Paso 2: Sonar - Análisis Estático"){
+}
+def sSonar(){
+    env.STAGE = "Paso 2: Sonar - Análisis Estático"
+    stage("$env.STAGE "){
         sh "echo 'Análisis Estático!'"
         withSonarQubeEnv('sonarqube3') {
             sh "echo 'Calling sonar by ID!'"
@@ -13,12 +29,18 @@ def call(){
             sh './gradlew sonarqube -Dsonar.projectKey=ejemplo-gradle -Dsonar.java.binaries=build'
         }
     }
-    stage("Paso 3: Curl Springboot Gradle sleep 20"){
+}
+def sCurlSpring(){
+    env.STAGE = "Paso 3: Curl Springboot Gradle sleep 20"
+    stage("$env.STAGE "){
         sh "gradle bootRun&"
         sh "sleep 20 && curl -X GET 'http://localhost:8081/rest/mscovid/test?msg=testing'"
     }
-    stage("Paso 4: Subir Nexus"){
-        nexusPublisher nexusInstanceId: 'nexus',
+}
+def sUNexus(){
+    env.STAGE = "Paso 4: Subir Nexus"
+    stage("$env.STAGE "){
+ nexusPublisher nexusInstanceId: 'nexus',
         nexusRepositoryId: 'devops-usach-nexus',
         packages: [
             [$class: 'MavenPackage',
@@ -37,13 +59,24 @@ def call(){
             ]
         ]
     }
-    stage("Paso 5: Descargar Nexus"){
-        sh ' curl -X GET -u $NEXUS_USER:$NEXUS_PASSWORD "http://nexus:8081/repository/devops-usach-nexus/com/devopsusach2020/DevOpsUsach2020/0.0.1/DevOpsUsach2020-0.0.1.jar" -O'
+}
+def sDNexus(){
+     stage("Paso 5: Descargar Nexus"){
+        env.STAGE = env.STAGE_NAME
+        sh ' curl -X GET -u $NEXUS_USER:$NEXUS_PASSWORD "http://nexus:8081/repository/devops-usach/com/devopsusach2020/DevOpsUsach2020/0.0.1/DevOpsUsach2020-0.0.1.jar" -O'
     }
+
+}
+
+def sTestJar(){
     stage("Paso 6: Levantar Artefacto Jar"){
+        env.STAGE = env.STAGE_NAME
         sh 'nohup bash java -jar DevOpsUsach2020-0.0.1.jar & >/dev/null'
     }
+}
+def sCurlJar(){
     stage("Paso 7: Testear Artefacto - Dormir(Esperar 20sg) "){
+        env.STAGE = env.STAGE_NAME
         sh "sleep 60 && curl -X GET 'http://localhost:8081/rest/mscovid/test?msg=testing'"
     }
 }
