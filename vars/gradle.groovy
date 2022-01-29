@@ -4,11 +4,12 @@
 	ejecucion.call()
 */
 def call(){
-    stage("Paso 1: Compliar"){
+    env.STAGE = "Paso 1: Compliar"
+    stage("$env.STAGE "){
         sh "mvn clean compile -e"
     }
-    stage("Paso 2: Testear"){
-
+    env.STAGE = "Paso 2: Testear"
+    stage("$env.STAGE "){    
         sh "mvn clean test -e"
     }
     stage("Paso 3: Build .Jar"){
