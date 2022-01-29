@@ -1,4 +1,5 @@
-pipeline {
+def call(){
+    pipeline {
     agent any
     environment {
         NEXUS_USER         = credentials('nexus-user')
@@ -18,16 +19,15 @@ pipeline {
                   switch(params.compileTool)
                     {
                         case 'Maven':
-                            //def ejecucion = load 'maven.groovy'
-                            maven.call()
+                             maven.call()
                         break;
                         case 'Gradle':
-                           // def ejecucion = load 'gradle.groovy'
-                            gradle.call()
+                             gradle.call()
                         break;
                     }
                 }
             }
         }
     }
+}
 }
