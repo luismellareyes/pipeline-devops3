@@ -23,7 +23,7 @@ def sSonar(){
     env.STAGE = "Paso 2: Sonar - Análisis Estático"
     stage("$env.STAGE "){
         sh "echo 'Análisis Estático!'"
-        withSonarQubeEnv('sonarqube3') {
+        withSonarQubeEnv('sonarqube') {
             sh "echo 'Calling sonar by ID!'"
             // Run Maven on a Unix agent to execute Sonar.
             sh './gradlew sonarqube -Dsonar.projectKey=ejemplo-gradle -Dsonar.java.binaries=build'
@@ -41,7 +41,7 @@ def sUNexus(){
     env.STAGE = "Paso 4: Subir Nexus"
     stage("$env.STAGE "){
  nexusPublisher nexusInstanceId: 'nexus',
-        nexusRepositoryId: 'devops-usach-nexus',
+        nexusRepositoryId: 'devops-usach',
         packages: [
             [$class: 'MavenPackage',
                 mavenAssetList: [
